@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIAM SAYS</title>
+  <style>
+    .color-btn {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 10px;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .black {
+      animation: changeColor 1s forwards;
+    }
+
+    .white {
+      animation: changeColor 1s backwards;
+    }
+
+    .red { background-color: red; }
+    .blue { background-color: blue; }
+    .green { background-color: green; }
+    .yellow { background-color: yellow; }
+    .purple { background-color: purple; }
+    .orange { background-color: orange; }
+    @keyframes changeColor {
+      0% { color: white; }
+      100% { color: black; }
+    }
+    body {
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Liam Says</h1>
+  <p id="round-display">Round: 1</p>
+  <p id="message">Follow the Liam Says color pattern!</p>
+  <div id="game-buttons">
+    <div class="color-btn red" onclick="userClick('red')"></div>
+    <div class="color-btn blue" onclick="userClick('blue')"></div>
+    <div class="color-btn green" onclick="userClick('green')"></div>
+    <div class="color-btn yellow" onclick="userClick('yellow')"></div>
+    <div class="color-btn purple" onclick="userClick('purple')"></div>
+    <div class="color-btn orange" onclick="userClick('orange')"></div>
+  </div>
+  <script>
+    const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+    let sequence = [];
+    let currentRound = 1;
+    let userInput = [];
+    let gameOver = false;
+    const roundDisplay = document.getElementById("round-display");
+    const messageDisplay = document.getElementById("message");
+
+    function nextRound() {
+      if (currentRound > 12) {
+        messageDisplay.textContent = "You win! Here's your code: jkjkjksjslkeodjrof%%%Ss^rudolph";
+        gameOver = true;
+        return;
+      }
+
+      userInput = [];
+      roundDisplay.textContent = `Round: ${currentRound}`;
+      messageDisplay.textContent = "Follow the Liam Says pattern!";
+      sequence.push(colors[Math.floor(Math.random() * colors.length)]);
+
+      playSequence();
+    }
+
+    function playSequence() {
+      let index = 0;
+      const interval = setInterval(() => {
+        if (index < sequence.length) {
+          flashColor(sequence[index]);
+          index++;
+        } else {
+          clearInterval(interval);
+          messageDisplay.textContent = "Your turn!";
+        }
+      }, 1000);
+    }
+
+    function flashColor(color) {
+      const button = document.querySelector(`.${color}`);
+      button.style.opacity = 0.5;
+      setTimeout(() => {
+        button.style.opacity = 1;
+      }, 500);
+    }
+
+    function userClick(color) {
+      if (gameOver) return;
+
+      userInput.push(color);
+      flashColor(color);
+
+      const currentIndex = userInput.length - 1;
+      if (userInput[currentIndex] !== sequence[currentIndex]) {
+        messageDisplay.textContent = "Game Over! Incorrect sequence!";
+        gameOver = true;
+        return;
+      }
+
+      if (userInput.length === sequence.length) {
+        currentRound++;
+        nextRound();
+      }
+    }
+
+    nextRound(); // Start the game
+  </script>
+</body>
+</html>

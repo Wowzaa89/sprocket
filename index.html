@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sprocket</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('background1.png') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-45%);
+      width: 300px;
+      max-width: 90%;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .screen img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .screen-text {
+      position: absolute;
+      color: green;
+      text-align: center;
+      font-size: 18px;
+      text-shadow: 2px 2px 4px #000;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s;
+      white-space: pre-line;
+    }
+
+    .controls {
+      position: absolute;
+      top: 600px;
+      left: 52%;
+      transform: translateX(-45%);
+      width: 150px;
+      max-width: 90%;
+    }
+
+    .mainbutton {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    iframe {
+      width: 260px;
+      height: 200px;
+      border: none;
+      margin-top: 10px;
+    }
+
+    .selected {
+      background-color: rgba(0, 255, 0, 0.2);
+    }
+
+    .locked {
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <img id="screen-img" src="screen_off.png" alt="Screen">
+    <div class="screen-text" id="screen-text"></div>
+  </div>
+  <div class="controls">
+    <button class="mainbutton" id="power-button">POWER</button>
+  </div>
+
+  <script>
+
+const params = new URLSearchParams(window.location.search);
+
+if (params.has('rejected')) {
+  window.location.href = "creditswithwinyes.html";
+}
+
+    const screenImg = document.getElementById('screen-img');
+    const screenText = document.getElementById('screen-text');
+    const powerButton = document.getElementById('power-button');
+
+    let poweredOn = false;
+    let lockedOut = false;
+    let driveOptions = ['A', 'B', 'C'];
+    let selectedIndex = 0;
+    let choosingDrive = false;
+    let enteringPassword = false;
+
+    const idle = new Audio('idle.mp3');
+    idle.loop = true;
+    idle.autoplay = true;
+    idle.style.display = 'none';
+    document.body.appendChild(idle);
+    
+    setInterval(() => {
+        idle.play();
+    }, 50) // 1 second
+
+
+    powerButton.addEventListener('click', () => {
+      if (poweredOn || lockedOut) return;
+      const pcidle = new Audio('pc-idle.mp3');
+      pcidle.loop = true;
+      pcidle.autoplay = true;
+      pcidle.style.display = 'none';
+      document.body.appendChild(pcidle);
+    
+    setInterval(() => {
+        pcidle.play();
+    }, 50) // 1 second
+    const pcon = new Audio('pc-on.mp3');
+      pcidle.loop = false;
+      pcidle.autoplay = true;
+      pcidle.style.display = 'none';
+      document.body.appendChild(pcidle);
+    
+    setInterval(() => {
+        pcidle.play();
+    }, 50) // 1 second
+
+      poweredOn = true;
+      screenImg.src = 'screen_on.png';
+
+      // Flicker effect
+      let flickers = 0;
+      const flicker = setInterval(() => {
+        screenText.style.opacity = (screenText.style.opacity == 0 ? 1 : 0);
+        flickers++;
+        if (flickers >= 6) {
+          clearInterval(flicker);
+          showDriveSelection();
+        }
+      }, 150);
+    });
+
+    function showDriveSelection() {
+      screenText.style.opacity = 1;
+      choosingDrive = true;
+      updateDriveDisplay();
+    }
+
+    function updateDriveDisplay() {
+      screenText.innerHTML = "Please select drive:\n" +
+        driveOptions.map((d, i) => {
+          if (d === 'C') return `<span class="locked">C (Locked)</span>`;
+          return i === selectedIndex ? `> Drive ${d}` : `  Drive ${d}`;
+        }).join('\n');
+    }
+
+    function errorscreen() {
+        var msg = new SpeechSynthesisUtterance();
+        var voices = window.speechSynthesis.getVoices();
+        msg.voice = voices[1]; 
+        msg.volume = 1; // From 0 to 1
+        msg.rate = 1; // From 0.1 to 10
+        msg.pitch = 0.5; // From 0 to 2
+        msg.text = "ERROR! Please restart to continue.";
+        speechSynthesis.speak(msg);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!choosingDrive || lockedOut) return;
+
+      if (e.key === 'ArrowDown') {
+        selectedIndex = (selectedIndex + 1) % driveOptions.length;
+        if (driveOptions[selectedIndex] === 'C') selectedIndex = 0; // Skip locked C
+        updateDriveDisplay();
+      }
+
+      if (e.key === 'ArrowUp') {
+        selectedIndex = (selectedIndex - 1 + driveOptions.length) % driveOptions.length;
+        if (driveOptions[selectedIndex] === 'C') selectedIndex = 1; // Skip locked C
+        updateDriveDisplay();
+      }
+
+      if (e.key === 'Enter') {
+  const selectedDrive = driveOptions[selectedIndex];
+
+  if (selectedDrive === 'A') {
+    choosingDrive = false;
+    enteringPassword = true;
+    const password = prompt("Enter password for Drive A:");
+    if (password === "Rehab") {
+      window.location.href = "fake_blog.html"; // Redirect to the page
+    } else {
+      screenImg.src = "screen_error.png";
+      screenText.style.opacity = 0;
+      lockedOut = true;
+      errorscreen();
+    }
+  }
+
+  else if (selectedDrive === 'B') {
+    choosingDrive = false;
+    enteringPassword = true;
+    const password = prompt("Enter password for Drive B to unlock:");
+    if (password === "sightisaburden") {
+        document.body.style.background = `url('background2.png') no-repeat center center fixed;`;
+        document.body.innerHTML = `<img id="img" src="screen_SEE1.png" onload="let i=1;setInterval(()=>img.src='screen_SEE'+(i=i%3+1)+'.png',150)">`;
+        return;
+    }
+    if (password === "%carcrash%") {
+      const x = window.open('');
+      x.document.write(`<!DOCTYPE html><html><head><style>body{background:black;color:red;font-family:sans-serif;padding:20px}</style></head><body>In 2012, a devastating crash shook the world. It happened on a foggy morning. Visibility was dangerously low. Vehicles piled up within minutes. Emergency services rushed to the scene. Screams echoed through the chaos. Witnesses were in shock. Many cars were left mangled. Helicopters hovered above. The highway was shut down. Investigations started immediately. It was declared one of the worst crashes of the decade. Dozens were injured. Several lives were lost. Families awaited news in despair. Media coverage was nonstop. Questions were raised about safety. Authorities promised reforms. The tragedy left scars. It will never be forgotten.</body><h1>RIP LIAM...</h1></html>`);
+    } else {
+      screenImg.src = "screen_error.png";
+      screenText.style.opacity = 0;
+      lockedOut = true;
+      errorscreen();
+    }
+
+    if (password === "jkjkjksjslkeodjrof%%%Ss^rudolph") {
+      alert("ADD ?rejected=yesmaybeidk TO THE END OF THIS URL")
+    } else {
+      screenImg.src = "screen_error.png";
+      screenText.style.opacity = 0;
+      lockedOut = true;
+      errorscreen();
+    }
+
+  }
+}
+
+    });
+  </script>
+</body>
+</html>
