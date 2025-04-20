@@ -50,70 +50,87 @@
     <div class="color-btn orange" onclick="userClick('orange')"></div>
   </div>
   <script>
-    const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
-    let sequence = [];
-    let currentRound = 1;
-    let userInput = [];
-    let gameOver = false;
-    const roundDisplay = document.getElementById("round-display");
-    const messageDisplay = document.getElementById("message");
+  const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+  let sequence = [];
+  let currentRound = 1;
+  let userInput = [];
+  let gameOver = false;
+  const roundDisplay = document.getElementById("round-display");
+  const messageDisplay = document.getElementById("message");
 
-    function nextRound() {
-      if (currentRound > 5) {
-        messageDisplay.textContent = "You win! Here's your code: jkjkjksjslkeodjrof%%%Ss^rudolph";
-        gameOver = true;
-        return;
+  let roundLimit = 15;
+
+  function nextRound() {
+    if (currentRound > roundLimit) {
+      messageDisplay.textContent = "You win! Here's your code: jkjkjksjslkeodjrof%%%Ss^rudolph";
+      gameOver = true;
+      return;
+    }
+
+    userInput = [];
+    roundDisplay.textContent = `Round: ${currentRound}`;
+    messageDisplay.textContent = "Follow the Liam Says pattern!";
+    sequence.push(colors[Math.floor(Math.random() * colors.length)]);
+
+    playSequence();
+  }
+
+  function playSequence() {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < sequence.length) {
+        flashColor(sequence[index]);
+        index++;
+      } else {
+        clearInterval(interval);
+        messageDisplay.textContent = "Your turn!";
       }
+    }, 1000);
+  }
 
-      userInput = [];
-      roundDisplay.textContent = `Round: ${currentRound}`;
-      messageDisplay.textContent = "Follow the Liam Says pattern!";
-      sequence.push(colors[Math.floor(Math.random() * colors.length)]);
+  function flashColor(color) {
+    const button = document.querySelector(`.${color}`);
+    button.style.opacity = 0.5;
+    setTimeout(() => {
+      button.style.opacity = 1;
+    }, 500);
+  }
 
-      playSequence();
+  function userClick(color) {
+    if (gameOver) return;
+
+    userInput.push(color);
+    flashColor(color);
+
+    const currentIndex = userInput.length - 1;
+    if (userInput[currentIndex] !== sequence[currentIndex]) {
+      messageDisplay.textContent = "Game Over! Incorrect sequence!";
+      gameOver = true;
+      return;
     }
 
-    function playSequence() {
-      let index = 0;
-      const interval = setInterval(() => {
-        if (index < sequence.length) {
-          flashColor(sequence[index]);
-          index++;
-        } else {
-          clearInterval(interval);
-          messageDisplay.textContent = "Your turn!";
-        }
-      }, 1000);
+    if (userInput.length === sequence.length) {
+      currentRound++;
+      nextRound();
     }
+  }
 
-    function flashColor(color) {
-      const button = document.querySelector(`.${color}`);
-      button.style.opacity = 0.5;
-      setTimeout(() => {
-        button.style.opacity = 1;
-      }, 500);
+  // Konami-style cheat code detection
+  const cheatCode = ['ArrowUp', 'ArrowDown', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowLeft', 'ArrowRight', 'ArrowRight'];
+  let keyBuffer = [];
+
+  document.addEventListener('keydown', (e) => {
+    keyBuffer.push(e.key);
+    if (keyBuffer.length > cheatCode.length) keyBuffer.shift();
+
+    if (keyBuffer.join(',') === cheatCode.join(',')) {
+      roundLimit = 5;
+      messageDisplay.textContent = "Cheat activated! Round limit is now 5!";
     }
+  });
 
-    function userClick(color) {
-      if (gameOver) return;
+  nextRound(); // Start the game
+</script>
 
-      userInput.push(color);
-      flashColor(color);
-
-      const currentIndex = userInput.length - 1;
-      if (userInput[currentIndex] !== sequence[currentIndex]) {
-        messageDisplay.textContent = "Game Over! Incorrect sequence!";
-        gameOver = true;
-        return;
-      }
-
-      if (userInput.length === sequence.length) {
-        currentRound++;
-        nextRound();
-      }
-    }
-
-    nextRound(); // Start the game
-  </script>
 </body>
 </html>
